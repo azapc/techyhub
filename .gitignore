@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Backend build
+dist/
+
+# Backend Prisma generated
+generated/prisma/
+
+# Frontend Nuxt build
+.output/
+.nuxt/
+.nitro/
+.data/
+.cache/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.fleet/
+*.swp
+*.swo
+*~
+
+# Coverage
+coverage/
+
+# Claude Code
+.claude/
+.agents/
+skills-lock.json
