@@ -1,4 +1,4 @@
-# Frontend - TechStore Admin
+# Frontend - TechyHub Admin
 
 Admin dashboard built with **Nuxt 4** + **Nuxt UI v4** + **Pinia** + **Tailwind CSS 4**.
 

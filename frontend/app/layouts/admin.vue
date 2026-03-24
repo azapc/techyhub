@@ -3,7 +3,7 @@
     <!-- Sidebar -->
     <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
       <div class="p-4 border-b border-gray-200 dark:border-gray-800">
-        <h1 class="text-xl font-bold text-primary-600">TechStore Admin</h1>
+        <h1 class="text-xl font-bold text-primary-600">TechyHub Admin</h1>
       </div>
 
       <nav class="flex-1 p-4 flex flex-col gap-1">

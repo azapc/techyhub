@@ -2,7 +2,7 @@
   <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
     <UCard class="w-full max-w-md">
       <template #header>
-        <h2 class="text-2xl font-bold text-center">TechStore</h2>
+        <h2 class="text-2xl font-bold text-center">TechyHub</h2>
         <p class="text-center text-gray-500 mt-1">Admin Panel</p>
       </template>
 

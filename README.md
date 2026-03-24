@@ -1,4 +1,4 @@
-# TechStore Ecommerce
+# TechyHub Ecommerce
 
 Full-stack ecommerce platform with an admin dashboard for managing products, categories, and orders.
 

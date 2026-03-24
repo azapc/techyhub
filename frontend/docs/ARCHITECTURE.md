@@ -2,7 +2,7 @@
 
 ## Overview
 
-The frontend is a **Nuxt 4** application serving as an admin dashboard for the TechStore ecommerce platform. It follows the Nuxt 4 directory convention where all application code lives inside the `app/` directory.
+The frontend is a **Nuxt 4** application serving as an admin dashboard for the TechyHub ecommerce platform. It follows the Nuxt 4 directory convention where all application code lives inside the `app/` directory.
 
 ## Pages & Routing
 
@@ -50,7 +50,7 @@ Two-column layout for all admin pages:
 ┌──────────────────────────────────────────┐
 │  Sidebar (264px)  │   Main Content       │
 │                   │                      │
-│  TechStore Admin  │   <slot />           │
+│  TechyHub Admin  │   <slot />           │
 │                   │   (page content)     │
 │  Dashboard        │                      │
 │  Products         │                      │

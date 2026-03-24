@@ -1,4 +1,4 @@
-# Backend - TechStore API
+# Backend - TechyHub API
 
 REST API built with **NestJS 11** + **TypeScript** + **Prisma 7** + **PostgreSQL 16**.
 

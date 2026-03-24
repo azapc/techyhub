@@ -22,7 +22,7 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   const config = new DocumentBuilder()
-    .setTitle('Ecommerce API')
+    .setTitle('TechyHub API')
     .setDescription('REST API for the tech ecommerce platform')
     .setVersion('1.0')
     .addBearerAuth()
