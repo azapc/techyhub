@@ -8,10 +8,18 @@
 
     <UCard>
       <UTable :data="orders" :columns="columns" :loading="pending">
-        <template #user-cell="{ row }">
+        <template #id-cell="{ row }">
+          <NuxtLink
+            :to="`/admin/orders/${(row.original as Order).id}`"
+            class="text-primary-600 hover:underline font-mono text-xs"
+          >
+            {{ (row.original as Order).id.slice(0, 8) }}...
+          </NuxtLink>
+        </template>
+        <template #customer-cell="{ row }">
           <div>
-            <p class="font-medium">{{ (row.original as Order).user?.name || 'No name' }}</p>
-            <p class="text-xs text-gray-500">{{ (row.original as Order).user?.email }}</p>
+            <p class="font-medium">{{ (row.original as Order).customerName }}</p>
+            <p class="text-xs text-gray-500">{{ (row.original as Order).customerEmail }}</p>
           </div>
         </template>
         <template #total-cell="{ row }">
@@ -57,6 +65,8 @@ interface Order {
   total: number
   status: string
   createdAt: string
+  customerName: string
+  customerEmail: string
   user?: { name: string | null; email: string }
 }
 
@@ -65,7 +75,7 @@ const toast = useToast()
 
 const columns: TableColumn<Order>[] = [
   { accessorKey: 'id', header: 'ID' },
-  { accessorKey: 'user', header: 'Customer' },
+  { accessorKey: 'customer', header: 'Customer' },
   { accessorKey: 'total', header: 'Total' },
   { accessorKey: 'status', header: 'Status' },
   { accessorKey: 'createdAt', header: 'Date' },

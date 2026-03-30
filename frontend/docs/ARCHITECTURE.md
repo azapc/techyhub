@@ -2,32 +2,49 @@
 
 ## Overview
 
-The frontend is a **Nuxt 4** application serving as an admin dashboard for the TechyHub ecommerce platform. It follows the Nuxt 4 directory convention where all application code lives inside the `app/` directory.
+The frontend is a **Nuxt 4** application with a **public storefront** and an **admin dashboard** for the TechyHub ecommerce platform. It follows the Nuxt 4 directory convention where all application code lives inside the `app/` directory.
 
 ## Pages & Routing
 
 Nuxt uses file-based routing. Each `.vue` file in `pages/` becomes a route.
 
+### Public Storefront
+
 ```
 app/pages/
-├── index.vue                    → /              (landing page)
-├── login.vue                    → /login         (admin login)
-└── admin/
-    ├── index.vue                → /admin          (dashboard)
-    ├── products/
-    │   ├── index.vue            → /admin/products  (product list)
-    │   ├── create.vue           → /admin/products/create
-    │   └── [id]/
-    │       └── edit.vue         → /admin/products/:id/edit
-    ├── categories/
-    │   └── index.vue            → /admin/categories
-    └── orders/
-        └── index.vue            → /admin/orders
+├── index.vue                    → /                    (homepage: hero, categories, featured products)
+├── login.vue                    → /login               (admin login)
+├── cart.vue                     → /cart                 (shopping cart)
+├── checkout.vue                 → /checkout             (guest checkout form)
+├── checkout/
+│   └── success.vue              → /checkout/success     (order confirmation)
+└── products/
+    ├── index.vue                → /products             (product catalog with filters)
+    └── [slug].vue               → /products/:slug       (product detail page)
+```
+
+### Admin Panel
+
+```
+app/pages/admin/
+├── index.vue                    → /admin                (dashboard with stats)
+├── products/
+│   ├── index.vue                → /admin/products       (product list)
+│   ├── create.vue               → /admin/products/create
+│   └── [id]/
+│       └── edit.vue             → /admin/products/:id/edit
+├── categories/
+│   └── index.vue                → /admin/categories
+└── orders/
+    ├── index.vue                → /admin/orders         (order list)
+    └── [id].vue                 → /admin/orders/:id     (order detail)
 ```
 
 ### Route Protection
 
 All `/admin/**` routes are protected by the `admin` middleware and rendered client-side only (SSR disabled via route rules).
+
+Cart, checkout, and checkout/success pages also have SSR disabled since they depend on `localStorage` for cart data.
 
 ```
 definePageMeta({
@@ -38,9 +55,31 @@ definePageMeta({
 
 ## Layouts
 
-### Default Layout (`app/layouts/default.vue`)
+### Store Layout (`app/layouts/store.vue`)
 
-Minimal full-height wrapper used by public pages.
+Public storefront layout used by all customer-facing pages:
+
+```
+┌──────────────────────────────────────────────┐
+│  Header                                      │
+│  ┌────────┐  ┌──────────────┐  ┌────┐ ┌──┐  │
+│  │ Logo   │  │ Search...    │  │Shop│ │🛒│  │
+│  └────────┘  └──────────────┘  └────┘ └──┘  │
+├──────────────────────────────────────────────┤
+│                                              │
+│  <slot /> (page content)                     │
+│                                              │
+├──────────────────────────────────────────────┤
+│  Footer                                      │
+│  TechyHub  │  Quick Links  │  Contact        │
+└──────────────────────────────────────────────┘
+```
+
+Features:
+- Sticky header with logo, search bar, shop link, and cart icon with badge
+- Responsive search (hidden on mobile, shown below on small screens)
+- Cart badge shows total item count from cart store
+- Footer with links and copyright
 
 ### Admin Layout (`app/layouts/admin.vue`)
 
@@ -50,7 +89,7 @@ Two-column layout for all admin pages:
 ┌──────────────────────────────────────────┐
 │  Sidebar (264px)  │   Main Content       │
 │                   │                      │
-│  TechyHub Admin  │   <slot />           │
+│  TechyHub Admin   │   <slot />           │
 │                   │   (page content)     │
 │  Dashboard        │                      │
 │  Products         │                      │
@@ -63,17 +102,15 @@ Two-column layout for all admin pages:
 └──────────────────────────────────────────┘
 ```
 
-Features:
-- Navigation links with active state highlighting
-- User info display (name, email, avatar)
-- Sign out button
-- Dark mode support
+### Default Layout (`app/layouts/default.vue`)
+
+Minimal full-height wrapper, used only by the login page.
 
 ## State Management (Pinia)
 
 ### Auth Store (`app/stores/auth.ts`)
 
-Manages authentication state for the entire application.
+Manages authentication state for admin access.
 
 ```
 ┌─────────────────────────────┐
@@ -94,15 +131,41 @@ Manages authentication state for the entire application.
 └─────────────────────────────┘
 ```
 
-**Persistence:** Token and user are stored in `localStorage` and restored on page load via `restore()`.
+### Cart Store (`app/stores/cart.ts`)
 
-**User interface:**
+Manages shopping cart state for the public storefront. Persisted to `localStorage`.
+
+```
+┌─────────────────────────────────┐
+│          Cart Store             │
+├─────────────────────────────────┤
+│ State:                          │
+│   items: CartItem[]             │
+├─────────────────────────────────┤
+│ Getters:                        │
+│   totalItems → number           │
+│   totalPrice → number           │
+│   isEmpty → boolean             │
+├─────────────────────────────────┤
+│ Actions:                        │
+│   addItem(product, quantity)    │
+│   updateQuantity(id, quantity)  │
+│   removeItem(id)                │
+│   clear()                       │
+│   restore()                     │
+└─────────────────────────────────┘
+```
+
+**CartItem interface:**
 ```typescript
-interface User {
+interface CartItem {
   id: string
-  email: string
-  name: string | null
-  role: 'ADMIN' | 'CUSTOMER'
+  name: string
+  slug: string
+  price: number
+  image: string | null
+  quantity: number
+  stock: number
 }
 ```
 
@@ -172,7 +235,35 @@ Reusable form component used by both the create and edit product pages.
 
 ## Data Flow
 
-### Authentication
+### Shopping Flow (Guest Checkout)
+
+```
+Homepage/Catalog        Product Detail        Cart Store         Cart Page
+    │                       │                    │                   │
+    ├── browse/search ─────>│                    │                   │
+    │                       ├── addItem() ──────>│                   │
+    │                       │                    ├── persist to      │
+    │                       │                    │   localStorage    │
+    │                       │                    │                   │
+    │                       │                    │<── restore() ─────┤
+    │                       │                    │                   ├── show items
+    │                       │                    │                   ├── update qty
+    │                       │                    │                   ├── remove items
+
+Checkout Page           useApi              Backend              Success Page
+    │                    │                    │                      │
+    ├── POST /orders/ ──>│                    │                      │
+    │   checkout         ├── POST ───────────>│                      │
+    │                    │                    ├── validate stock     │
+    │                    │                    ├── decrement stock    │
+    │                    │                    ├── create order       │
+    │                    │<── { order } ──────┤                      │
+    ├── cartStore.clear()│                    │                      │
+    ├── navigateTo ──────────────────────────────────────────────── >│
+    │   /checkout/success│                    │                      ├── show confirmation
+```
+
+### Authentication (Admin)
 
 ```
 Login Page                Auth Store              useApi              Backend
@@ -186,28 +277,17 @@ Login Page                Auth Store              useApi              Backend
     │                         ├── navigateTo('/admin')                  │
 ```
 
-### Admin Page Load
-
-```
-Admin Page               Middleware             Auth Store          useApi
-    │                        │                     │                  │
-    ├── definePageMeta ─────>│                     │                  │
-    │   middleware: ['admin'] │                     │                  │
-    │                        ├── restore() ───────>│                  │
-    │                        │   (from localStorage)                  │
-    │                        ├── check isAdmin ────┤                  │
-    │                        │                     │                  │
-    ├── onMounted ──────────────────────────────────────── get() ────>│
-    │   fetch data           │                     │                  │
-```
-
 ## Design Decisions
 
 | Decision | Rationale |
 |----------|-----------|
 | **Nuxt 4 `app/` directory** | Future-proof structure, separates app code from config files |
-| **SSR disabled for `/admin/**`** | Admin pages rely on `localStorage` for auth; SSR would cause hydration mismatches |
-| **Pinia with localStorage** | Simple token persistence without cookies; `restore()` re-hydrates on client |
+| **Store layout for public pages** | Consistent header (search, cart badge) and footer across all customer pages |
+| **SSR disabled for `/admin/**`, `/cart`, `/checkout`** | These pages rely on `localStorage`; SSR would cause hydration mismatches |
+| **Cart in localStorage (not server)** | No auth required for shopping; simple guest experience without backend cart management |
+| **Guest checkout** | Customers can buy without creating an account; reduces friction |
+| **Product pages use slug URLs** | SEO-friendly URLs (`/products/macbook-pro-m3` instead of `/products/clxx...`) |
+| **Pinia with localStorage** | Simple persistence without cookies; `restore()` re-hydrates on client |
 | **Single `useApi` composable** | Centralizes auth headers, base URL, and 401 handling in one place |
 | **Named middleware (not global)** | Only admin pages need auth checks; public pages remain unrestricted |
 | **Nuxt UI v4 components** | Pre-built accessible components (UTable, USelect, UButton) reduce custom UI code |

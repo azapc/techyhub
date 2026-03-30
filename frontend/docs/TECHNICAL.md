@@ -39,6 +39,9 @@ The dev server starts at `http://localhost:3000`.
 | `modules` | `@nuxt/eslint`, `@nuxt/ui`, `@pinia/nuxt` | Registered Nuxt modules |
 | `runtimeConfig.public.apiBase` | `http://localhost:3001` | Backend API URL |
 | `routeRules./admin/**` | `{ ssr: false }` | Disable SSR for admin pages |
+| `routeRules./cart` | `{ ssr: false }` | Disable SSR for cart (localStorage) |
+| `routeRules./checkout` | `{ ssr: false }` | Disable SSR for checkout |
+| `routeRules./checkout/**` | `{ ssr: false }` | Disable SSR for checkout success |
 | `devtools` | `true` | Enable Nuxt DevTools |
 
 ### App Config (`app.config.ts`)
@@ -119,6 +122,47 @@ Email:    admin@ecommerce.com
 Password: admin123
 ```
 
+## Public Storefront Pages
+
+### Homepage (`/`)
+
+Hero banner, category grid, and featured products (latest 8). All data fetched on mount from public API endpoints.
+
+### Product Catalog (`/products`)
+
+- Grid of product cards with category filter sidebar
+- Search by name
+- Client-side price range filter
+- Pagination
+- Low stock and out-of-stock indicators
+
+### Product Detail (`/products/:slug`)
+
+- Image gallery with thumbnail selection
+- Product info: name, price, category, stock status, description
+- Quantity selector with stock limit
+- Add to cart button (updates cart store + shows toast)
+
+### Cart (`/cart`)
+
+- List of cart items with quantity controls
+- Remove items
+- Order summary with total
+- Proceed to checkout button
+- Cart data persisted in `localStorage` via cart store
+
+### Checkout (`/checkout`)
+
+- Guest checkout form: name, email, shipping address
+- Order summary sidebar
+- Submits `POST /orders/checkout` with cart items
+- On success: clears cart, redirects to confirmation
+
+### Order Confirmation (`/checkout/success`)
+
+- Displays order details fetched from `GET /orders/confirmation/:id`
+- Shows customer info, shipping address, items, and total
+
 ## Admin Pages
 
 ### Dashboard (`/admin`)
@@ -146,8 +190,17 @@ Displays four stat cards fetched from `GET /products/stats`:
 ### Orders (`/admin/orders`)
 
 - List with status filter dropdown
-- Inline status update via badge/dropdown
-- Detail view with order items
+- Clickable order ID links to detail page
+- Shows customer name/email (from order, not user relation)
+- Inline status update via dropdown
+
+### Order Detail (`/admin/orders/:id`)
+
+- Full order details: items with images, quantities, prices
+- Shipping address
+- Customer info (registered user or guest)
+- Status update dropdown
+- Timestamps (created, updated)
 
 ## Coding Conventions
 
@@ -202,13 +255,21 @@ frontend/
 │   ├── composables/
 │   │   └── useApi.ts                 # HTTP client wrapper
 │   ├── layouts/
-│   │   ├── default.vue               # Public pages layout
+│   │   ├── default.vue               # Minimal layout (login page)
+│   │   ├── store.vue                 # Public storefront (header, footer, cart badge)
 │   │   └── admin.vue                 # Admin sidebar layout
 │   ├── middleware/
 │   │   └── admin.ts                  # Auth + role guard
 │   ├── pages/
-│   │   ├── index.vue                 # Landing page
-│   │   ├── login.vue                 # Login form
+│   │   ├── index.vue                 # Homepage (hero, categories, products)
+│   │   ├── login.vue                 # Admin login form
+│   │   ├── cart.vue                  # Shopping cart
+│   │   ├── checkout.vue              # Guest checkout form
+│   │   ├── checkout/
+│   │   │   └── success.vue           # Order confirmation
+│   │   ├── products/
+│   │   │   ├── index.vue             # Product catalog with filters
+│   │   │   └── [slug].vue            # Product detail page
 │   │   └── admin/
 │   │       ├── index.vue             # Dashboard
 │   │       ├── products/
@@ -219,9 +280,11 @@ frontend/
 │   │       ├── categories/
 │   │       │   └── index.vue         # Category management
 │   │       └── orders/
-│   │           └── index.vue         # Order management
+│   │           ├── index.vue         # Order list
+│   │           └── [id].vue          # Order detail
 │   ├── stores/
-│   │   └── auth.ts                   # Pinia auth store
+│   │   ├── auth.ts                   # Pinia auth store
+│   │   └── cart.ts                   # Pinia cart store (localStorage)
 │   └── app.config.ts                 # UI theme config
 ├── public/
 │   └── favicon.ico

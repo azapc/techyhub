@@ -1,6 +1,6 @@
 # TechyHub Ecommerce
 
-Full-stack ecommerce platform with an admin dashboard for managing products, categories, and orders.
+Full-stack ecommerce platform with a public storefront and an admin dashboard for managing products, categories, and orders.
 
 ## Tech Stack
 
@@ -34,11 +34,11 @@ ecommerce/
 │   └── prisma/          # Schema, migrations & seed
 └── frontend/            # Nuxt.js app (port 3000)
     └── app/
-        ├── pages/       # File-based routing
+        ├── pages/       # File-based routing (store + admin)
         ├── components/  # Vue components
         ├── composables/ # useApi
-        ├── stores/      # Pinia auth store
-        ├── layouts/     # Admin & default layouts
+        ├── stores/      # Pinia (auth + cart)
+        ├── layouts/     # Store, admin & default layouts
         └── middleware/  # Auth middleware
 ```
 
@@ -102,7 +102,10 @@ pnpm dev
 
 | Service | URL |
 |---------|-----|
-| Frontend | http://localhost:3000 |
+| Storefront | http://localhost:3000 |
+| Product Catalog | http://localhost:3000/products |
+| Shopping Cart | http://localhost:3000/cart |
+| Checkout | http://localhost:3000/checkout |
 | Admin Dashboard | http://localhost:3000/admin |
 | Backend API | http://localhost:3001 |
 | Swagger Docs | http://localhost:3001/api/docs |
@@ -128,6 +131,7 @@ Password: admin123
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/products` | List products (paginated, filterable) |
+| GET | `/products/slug/:slug` | Get product by slug |
 | GET | `/products/stats` | Dashboard stats (admin) |
 | GET | `/products/:id` | Get product by ID |
 | POST | `/products` | Create product (admin) |
@@ -146,6 +150,8 @@ Password: admin123
 ### Orders
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| POST | `/orders/checkout` | Place an order (public, no auth) |
+| GET | `/orders/confirmation/:id` | Order confirmation (public, limited data) |
 | GET | `/orders` | List orders (admin) |
 | GET | `/orders/:id` | Get order by ID (admin) |
 | PATCH | `/orders/:id/status` | Update order status (admin) |

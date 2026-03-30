@@ -1,76 +1,125 @@
 <template>
   <div>
-    <UPageHero
-      title="Nuxt Starter Template"
-      description="A production-ready starter template powered by Nuxt UI. Build beautiful, accessible, and performant applications in minutes, not hours."
-      :links="[{
-        label: 'Get started',
-        to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
-        target: '_blank',
-        trailingIcon: 'i-lucide-arrow-right',
-        size: 'xl'
-      }, {
-        label: 'Use this template',
-        to: 'https://github.com/nuxt-ui-templates/starter',
-        target: '_blank',
-        icon: 'i-simple-icons-github',
-        size: 'xl',
-        color: 'neutral',
-        variant: 'subtle'
-      }]"
-    />
+    <!-- Hero -->
+    <section class="bg-gradient-to-br from-primary-50 to-green-100 dark:from-gray-900 dark:to-gray-800">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+        <div class="text-center max-w-3xl mx-auto">
+          <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+            The Best Tech at the Best Price
+          </h1>
+          <p class="text-lg text-gray-600 dark:text-gray-300 mb-8">
+            Discover our curated selection of laptops, smartphones, monitors, and accessories.
+          </p>
+          <NuxtLink to="/products">
+            <UButton size="xl" trailing-icon="i-lucide-arrow-right">
+              Shop Now
+            </UButton>
+          </NuxtLink>
+        </div>
+      </div>
+    </section>
 
-    <UPageSection
-      id="features"
-      title="Everything you need to build modern Nuxt apps"
-      description="Start with a solid foundation. This template includes all the essentials for building production-ready applications with Nuxt UI's powerful component system."
-      :features="[{
-        icon: 'i-lucide-rocket',
-        title: 'Production-ready from day one',
-        description: 'Pre-configured with TypeScript, ESLint, Tailwind CSS, and all the best practices. Focus on building features, not setting up tooling.'
-      }, {
-        icon: 'i-lucide-palette',
-        title: 'Beautiful by default',
-        description: 'Leveraging Nuxt UI\'s design system with automatic dark mode, consistent spacing, and polished components that look great out of the box.'
-      }, {
-        icon: 'i-lucide-zap',
-        title: 'Lightning fast',
-        description: 'Optimized for performance with SSR/SSG support, automatic code splitting, and edge-ready deployment. Your users will love the speed.'
-      }, {
-        icon: 'i-lucide-blocks',
-        title: '100+ components included',
-        description: 'Access Nuxt UI\'s comprehensive component library. From forms to navigation, everything is accessible, responsive, and customizable.'
-      }, {
-        icon: 'i-lucide-code-2',
-        title: 'Developer experience first',
-        description: 'Auto-imports, hot module replacement, and TypeScript support. Write less boilerplate and ship more features.'
-      }, {
-        icon: 'i-lucide-shield-check',
-        title: 'Built for scale',
-        description: 'Enterprise-ready architecture with proper error handling, SEO optimization, and security best practices built-in.'
-      }]"
-    />
+    <!-- Categories -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <h2 class="text-2xl font-bold mb-8">Shop by Category</h2>
+      <div v-if="categories.length" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <NuxtLink
+          v-for="cat in categories"
+          :key="cat.id"
+          :to="{ path: '/products', query: { category: cat.id } }"
+          class="group relative bg-gray-50 dark:bg-gray-800 rounded-xl p-6 text-center hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors border border-gray-200 dark:border-gray-700"
+        >
+          <UIcon name="i-lucide-tag" class="w-8 h-8 mx-auto mb-3 text-primary-600" />
+          <h3 class="font-semibold text-gray-900 dark:text-white">{{ cat.name }}</h3>
+          <p class="text-sm text-gray-500 mt-1">{{ cat._count.products }} products</p>
+        </NuxtLink>
+      </div>
+      <div v-else class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <USkeleton v-for="i in 4" :key="i" class="h-32 rounded-xl" />
+      </div>
+    </section>
 
-    <UPageSection>
-      <UPageCTA
-        title="Ready to build your next Nuxt app?"
-        description="Join thousands of developers building with Nuxt and Nuxt UI. Get this template and start shipping today."
-        variant="subtle"
-        :links="[{
-          label: 'Start building',
-          to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
-          target: '_blank',
-          trailingIcon: 'i-lucide-arrow-right',
-          color: 'neutral'
-        }, {
-          label: 'View on GitHub',
-          to: 'https://github.com/nuxt-ui-templates/starter',
-          target: '_blank',
-          icon: 'i-simple-icons-github',
-          color: 'neutral',
-          variant: 'outline'
-        }]"
-      />
-    </UPageSection>
+    <!-- Featured Products -->
+    <section class="bg-gray-50 dark:bg-gray-900">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="flex justify-between items-center mb-8">
+          <h2 class="text-2xl font-bold">Featured Products</h2>
+          <NuxtLink to="/products" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+            View all &rarr;
+          </NuxtLink>
+        </div>
+        <div v-if="products.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <NuxtLink
+            v-for="product in products"
+            :key="product.id"
+            :to="`/products/${product.slug}`"
+            class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow"
+          >
+            <div class="aspect-square bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+              <img
+                v-if="product.images?.[0]"
+                :src="product.images[0].url"
+                :alt="product.name"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform"
+              >
+              <UIcon v-else name="i-lucide-image" class="w-16 h-16 text-gray-300" />
+            </div>
+            <div class="p-4">
+              <p class="text-xs text-primary-600 font-medium mb-1">{{ product.category?.name }}</p>
+              <h3 class="font-semibold text-gray-900 dark:text-white truncate">{{ product.name }}</h3>
+              <p class="text-lg font-bold text-primary-600 mt-2">${{ Number(product.price).toFixed(2) }}</p>
+            </div>
+          </NuxtLink>
+        </div>
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <USkeleton v-for="i in 4" :key="i" class="h-72 rounded-xl" />
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+      <h2 class="text-2xl font-bold mb-4">Ready to upgrade your setup?</h2>
+      <p class="text-gray-500 mb-6">Browse our full catalog and find the perfect tech for you.</p>
+      <NuxtLink to="/products">
+        <UButton size="lg" variant="outline">
+          Browse All Products
+        </UButton>
+      </NuxtLink>
+    </section>
   </div>
 </template>
+
+<script setup lang="ts">
+definePageMeta({ layout: 'store' })
+
+const api = useApi()
+
+interface Category {
+  id: string
+  name: string
+  slug: string
+  _count: { products: number }
+}
+
+interface Product {
+  id: string
+  name: string
+  slug: string
+  price: number
+  category?: { name: string }
+  images?: { url: string }[]
+}
+
+const categories = ref<Category[]>([])
+const products = ref<Product[]>([])
+
+onMounted(async () => {
+  const [catRes, prodRes] = await Promise.all([
+    api.get<Category[]>('/categories'),
+    api.get<{ data: Product[] }>('/products?limit=8')
+  ])
+  categories.value = catRes
+  products.value = prodRes.data
+})
+</script>

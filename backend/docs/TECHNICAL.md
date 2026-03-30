@@ -99,6 +99,7 @@ Swagger UI: `http://localhost:3001/api/docs`
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | GET | `/products` | Public | List products (paginated) |
+| GET | `/products/slug/:slug` | Public | Get product by slug |
 | GET | `/products/stats` | Admin | Dashboard statistics |
 | GET | `/products/:id` | Public | Get single product |
 | POST | `/products` | Admin | Create product |
@@ -152,13 +153,32 @@ Swagger UI: `http://localhost:3001/api/docs`
 
 ### Orders
 
-All order endpoints require Admin authentication.
-
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
+| POST | `/orders/checkout` | Public | Place an order (guest checkout) |
+| GET | `/orders/confirmation/:id` | Public | Get order confirmation (limited data) |
 | GET | `/orders` | Admin | List orders (paginated, filterable by status) |
 | GET | `/orders/:id` | Admin | Get order with items |
 | PATCH | `/orders/:id/status` | Admin | Update order status |
+
+**POST /orders/checkout** body:
+
+```json
+{
+  "customerName": "John Doe",
+  "customerEmail": "john@example.com",
+  "shippingAddress": "123 Main St",
+  "shippingCity": "New York",
+  "shippingState": "NY",
+  "shippingZip": "10001",
+  "shippingCountry": "US",
+  "items": [
+    { "productId": "clxx...", "quantity": 2 }
+  ]
+}
+```
+
+The checkout endpoint validates stock availability, decrements stock in a transaction, calculates the total from current product prices, and returns the created order.
 
 **GET /orders** query parameters:
 
@@ -244,9 +264,10 @@ backend/
 │   │       └── update-category.dto.ts
 │   ├── orders/
 │   │   ├── orders.module.ts
-│   │   ├── orders.controller.ts        # All endpoints require ADMIN role
+│   │   ├── orders.controller.ts        # Public checkout + admin management
 │   │   ├── orders.service.ts
 │   │   └── dto/
+│   │       ├── checkout.dto.ts         # Guest checkout validation
 │   │       ├── update-status.dto.ts
 │   │       └── find-orders-query.dto.ts
 │   ├── prisma/

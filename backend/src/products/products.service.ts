@@ -36,6 +36,15 @@ export class ProductsService {
     return product;
   }
 
+  async findBySlug(slug: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { slug },
+      include: { category: true, images: true },
+    });
+    if (!product) throw new NotFoundException('Product not found');
+    return product;
+  }
+
   async create(dto: CreateProductDto) {
     const { images, ...data } = dto;
     return this.prisma.product.create({

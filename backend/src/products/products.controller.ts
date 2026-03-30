@@ -31,6 +31,12 @@ export class ProductsController {
     return this.productsService.stats();
   }
 
+  @Get('slug/:slug')
+  @ApiOperation({ summary: 'Get product by slug' })
+  findBySlug(@Param('slug') slug: string) {
+    return this.productsService.findBySlug(slug);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get product by ID' })
   findOne(@Param('id') id: string) {

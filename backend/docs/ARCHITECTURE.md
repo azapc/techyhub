@@ -8,9 +8,9 @@ The backend follows the standard NestJS modular architecture. Each domain featur
 AppModule
 ├── PrismaModule        (GLOBAL) Database access
 ├── AuthModule          JWT authentication & authorization
-├── ProductsModule      Product catalog CRUD
+├── ProductsModule      Product catalog CRUD + slug lookup
 ├── CategoriesModule    Category management CRUD
-└── OrdersModule        Order management
+└── OrdersModule        Order management + public checkout
 ```
 
 ### Module Dependencies
@@ -120,26 +120,34 @@ Client                  Guard Chain              Controller          Service
      │              │ categoryId
      │              └───┬──────┘
      │                  │
-┌────┴─────┐      ┌────┴──────┐
-│  Order   │──────│ OrderItem │
-├──────────┤      ├───────────┤
-│ id       │      │ id        │
-│ userId   │      │ orderId   │
-│ status   │      │ productId │
-│ total    │      │ quantity  │
-│ createdAt│      │ price     │
-└──────────┘      └───────────┘
+┌────┴─────────────┐  ┌────┴──────┐
+│     Order        │──│ OrderItem │
+├──────────────────┤  ├───────────┤
+│ id               │  │ id        │
+│ userId (nullable)│  │ orderId   │
+│ customerName     │  │ productId │
+│ customerEmail    │  │ quantity  │
+│ shippingAddress  │  │ price     │
+│ shippingCity     │  └───────────┘
+│ shippingState    │
+│ shippingZip      │
+│ shippingCountry  │
+│ status           │
+│ total            │
+└──────────────────┘
 ```
 
 ### Relationships
 
 | Relation | Type | Cascade |
 |----------|------|---------|
-| User → Orders | One-to-Many | - |
+| User → Orders | One-to-Many (optional) | - |
 | Category → Products | One-to-Many | - |
 | Product → ProductImages | One-to-Many | Delete |
 | Product → OrderItems | One-to-Many | - |
 | Order → OrderItems | One-to-Many | Delete |
+
+**Note:** `Order.userId` is nullable to support guest checkout. Orders always have `customerName` and `customerEmail`.
 
 ### Enums
 

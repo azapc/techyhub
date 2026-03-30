@@ -22,6 +22,9 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/admin/**': { ssr: false },
+    '/cart': { ssr: false },
+    '/checkout/**': { ssr: false },
+    '/checkout': { ssr: false },
   },
 
   compatibilityDate: '2025-01-15',

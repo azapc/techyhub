@@ -53,14 +53,21 @@ model ProductImage {
 }
 
 model Order {
-  id        String      @id @default(cuid())
-  userId    String
-  status    OrderStatus @default(PENDING)
-  total     Decimal     @db.Decimal(10, 2)
-  items     OrderItem[]
-  user      User        @relation(fields: [userId], references: [id])
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id              String      @id @default(cuid())
+  userId          String?
+  status          OrderStatus @default(PENDING)
+  total           Decimal     @db.Decimal(10, 2)
+  customerName    String
+  customerEmail   String
+  shippingAddress String
+  shippingCity    String
+  shippingState   String
+  shippingZip     String
+  shippingCountry String      @default("US")
+  items           OrderItem[]
+  user            User?       @relation(fields: [userId], references: [id])
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 }
 
 model OrderItem {
