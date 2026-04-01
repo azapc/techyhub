@@ -1,65 +1,60 @@
-# TechyHub Ecommerce
+<p align="center">
+  <h1 align="center">TechyHub</h1>
+</p>
+<h4 align="center">
+    <a href="backend/docs/ARCHITECTURE.md">Architecture</a> |
+    <a href="backend/docs/TECHNICAL.md">Backend Docs</a> |
+    <a href="frontend/docs/TECHNICAL.md">Frontend Docs</a>
+</h4>
 
-Full-stack ecommerce platform with a public storefront and an admin dashboard for managing products, categories, and orders.
+<p align="center">
+  <a href="https://opensource.org/licenses/GPL-3.0"><img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License"></a>
+</p>
+
+<p align="center">
+<img alt="TechyHub Storefront" width="950" src=".github/images/storefront.png"/>
+</p>
+
+## Introduction
+
+TechyHub is a full-stack eCommerce platform built with Nuxt.js and NestJS. It features a public storefront with guest checkout and an admin dashboard for managing products, categories, and orders — all powered by a PostgreSQL database and Prisma ORM.
+
+## Features
+
+- **Public storefront** — Browse products, filter by category, search, and view product details
+- **Guest checkout** — Place orders without creating an account
+- **Shopping cart** — Client-side cart with quantity management and stock validation
+- **Order confirmation** — Track your order after checkout
+- **Admin dashboard** — Manage products, categories, and orders with role-based access
+- **SEO-friendly URLs** — Slug-based product routes
+- **REST API** — Fully documented with Swagger
+- **Security** — JWT auth, rate limiting, input validation, role guards
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Nuxt 4 (Vue 3) + Nuxt UI v4 + Pinia |
+| Frontend | Nuxt 4 (Vue 3) + Nuxt UI + Pinia |
 | Backend | NestJS 11 + TypeScript |
 | Database | PostgreSQL 16 |
 | ORM | Prisma 7 |
 | Auth | JWT + Passport.js |
 | Container | Podman / Docker |
 
-## Prerequisites
-
-- Node.js >= 22 (recommended via [nvm](https://github.com/nvm-sh/nvm))
-- pnpm
-- PostgreSQL 16 (or Podman/Docker)
-
-## Project Structure
-
-```
-ecommerce/
-├── backend/             # NestJS REST API (port 3001)
-│   ├── src/
-│   │   ├── auth/        # JWT authentication & role guards
-│   │   ├── products/    # Products CRUD
-│   │   ├── categories/  # Categories CRUD
-│   │   ├── orders/      # Orders management
-│   │   ├── prisma/      # PrismaService (global)
-│   │   └── common/      # Exception filters
-│   └── prisma/          # Schema, migrations & seed
-└── frontend/            # Nuxt.js app (port 3000)
-    └── app/
-        ├── pages/       # File-based routing (store + admin)
-        ├── components/  # Vue components
-        ├── composables/ # useApi
-        ├── stores/      # Pinia (auth + cart)
-        ├── layouts/     # Store, admin & default layouts
-        └── middleware/  # Auth middleware
-```
-
 ## Getting Started
 
 ### 1. Database
 
-Using Podman:
-
 ```bash
+# Using Podman
 podman run -d --name ecommerce-postgres \
   -e POSTGRES_USER=ecommerce \
   -e POSTGRES_PASSWORD=ecommerce123 \
   -e POSTGRES_DB=ecommerce \
   -p 5432:5432 \
   docker.io/library/postgres:16
-```
 
-Or Docker:
-
-```bash
+# Or Docker
 docker run -d --name ecommerce-postgres \
   -e POSTGRES_USER=ecommerce \
   -e POSTGRES_PASSWORD=ecommerce123 \
@@ -98,92 +93,45 @@ pnpm install
 pnpm dev
 ```
 
-## URLs
+The storefront will be available at `http://localhost:3000` and the API at `http://localhost:3001`.
 
-| Service | URL |
-|---------|-----|
-| Storefront | http://localhost:3000 |
-| Product Catalog | http://localhost:3000/products |
-| Shopping Cart | http://localhost:3000/cart |
-| Checkout | http://localhost:3000/checkout |
-| Admin Dashboard | http://localhost:3000/admin |
-| Backend API | http://localhost:3001 |
-| Swagger Docs | http://localhost:3001/api/docs |
+## Demo
 
-## Default Admin Credentials
+<table>
+  <tr>
+    <td><strong>Storefront</strong></td>
+    <td><a href="http://localhost:3000">http://localhost:3000</a></td>
+  </tr>
+  <tr>
+    <td><strong>Product Catalog</strong></td>
+    <td><a href="http://localhost:3000/products">http://localhost:3000/products</a></td>
+  </tr>
+  <tr>
+    <td><strong>Admin Dashboard</strong></td>
+    <td><a href="http://localhost:3000/admin">http://localhost:3000/admin</a></td>
+  </tr>
+  <tr>
+    <td><strong>API Docs (Swagger)</strong></td>
+    <td><a href="http://localhost:3001/api/docs">http://localhost:3001/api/docs</a></td>
+  </tr>
+</table>
+
+**Admin credentials:**
 
 ```
 Email:    admin@ecommerce.com
 Password: admin123
 ```
 
-> Change these credentials in production.
-
-## API Endpoints
-
-### Auth
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/login` | Login (returns JWT) |
-| GET | `/auth/profile` | Get current user profile |
-
-### Products
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/products` | List products (paginated, filterable) |
-| GET | `/products/slug/:slug` | Get product by slug |
-| GET | `/products/stats` | Dashboard stats (admin) |
-| GET | `/products/:id` | Get product by ID |
-| POST | `/products` | Create product (admin) |
-| PUT | `/products/:id` | Update product (admin) |
-| DELETE | `/products/:id` | Delete product (admin) |
-
-### Categories
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/categories` | List categories |
-| GET | `/categories/:id` | Get category by ID |
-| POST | `/categories` | Create category (admin) |
-| PUT | `/categories/:id` | Update category (admin) |
-| DELETE | `/categories/:id` | Delete category (admin) |
-
-### Orders
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/orders/checkout` | Place an order (public, no auth) |
-| GET | `/orders/confirmation/:id` | Order confirmation (public, limited data) |
-| GET | `/orders` | List orders (admin) |
-| GET | `/orders/:id` | Get order by ID (admin) |
-| PATCH | `/orders/:id/status` | Update order status (admin) |
-
-## Database Schema
-
-```
-User ──< Order ──< OrderItem >── Product >── Category
-                                  Product ──< ProductImage
-```
-
-**Models:** User, Category, Product, ProductImage, Order, OrderItem
-
-## Security
-
-- JWT authentication with Passport.js
-- Role-based access control (ADMIN / CUSTOMER)
-- Global rate limiting (3/s, 20/10s, 100/min)
-- Stricter rate limit on login (5 attempts/min)
-- Input validation with class-validator on all endpoints
-- Unknown properties rejected (`forbidNonWhitelisted`)
-- Global exception filter (no stack traces exposed)
-
 ## Documentation
 
-Each subproject has its own detailed documentation:
+Each subproject has detailed architecture and technical documentation:
 
-| Project | Architecture | Technical Guide |
-|---------|-------------|-----------------|
-| Backend | [backend/docs/ARCHITECTURE.md](backend/docs/ARCHITECTURE.md) | [backend/docs/TECHNICAL.md](backend/docs/TECHNICAL.md) |
-| Frontend | [frontend/docs/ARCHITECTURE.md](frontend/docs/ARCHITECTURE.md) | [frontend/docs/TECHNICAL.md](frontend/docs/TECHNICAL.md) |
+- [Backend Architecture](backend/docs/ARCHITECTURE.md)
+- [Backend Technical Guide](backend/docs/TECHNICAL.md)
+- [Frontend Architecture](frontend/docs/ARCHITECTURE.md)
+- [Frontend Technical Guide](frontend/docs/TECHNICAL.md)
 
 ## License
 
-MIT
+[GPL-3.0 License](LICENSE)
