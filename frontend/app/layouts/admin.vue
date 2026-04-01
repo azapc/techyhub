@@ -1,41 +1,60 @@
 <template>
-  <div class="flex h-screen bg-gray-50 dark:bg-gray-950">
+  <div class="flex h-screen bg-gray-950 text-white">
     <!-- Sidebar -->
-    <aside class="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
-      <div class="p-4 border-b border-gray-200 dark:border-gray-800">
-        <h1 class="text-xl font-bold text-primary-600">TechyHub Admin</h1>
+    <aside class="w-60 bg-gray-950 border-r border-white/[0.06] flex flex-col">
+      <!-- Logo -->
+      <div class="p-5 border-b border-white/[0.06]">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold text-sm">
+            T
+          </div>
+          <div>
+            <span class="text-sm font-bold tracking-tight">TechyHub</span>
+            <span class="text-[10px] text-gray-500 ml-1.5 uppercase tracking-widest">Admin</span>
+          </div>
+        </div>
       </div>
 
-      <nav class="flex-1 p-4 flex flex-col gap-1">
+      <!-- Navigation -->
+      <nav class="flex-1 p-3 flex flex-col gap-0.5">
         <NuxtLink
           v-for="link in navLinks"
           :key="link.to"
           :to="link.to"
-          class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
-          :class="isActive(link.to) ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400' : 'text-gray-700 dark:text-gray-300'"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative"
+          :class="isActive(link.to)
+            ? 'bg-green-500/10 text-green-400 nav-active'
+            : 'text-gray-400 hover:text-white hover:bg-white/5'"
         >
-          <UIcon :name="link.icon" class="w-5 h-5 shrink-0" />
+          <UIcon :name="link.icon" class="w-[18px] h-[18px] shrink-0" />
           {{ link.label }}
         </NuxtLink>
       </nav>
 
-      <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+      <!-- User -->
+      <div class="p-4 border-t border-white/[0.06]">
         <div class="flex items-center gap-3 mb-3">
-          <UAvatar :alt="authStore.user?.name || authStore.user?.email" size="sm" />
-          <div class="min-w-0">
+          <div class="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-green-400">
+            {{ (authStore.user?.name || authStore.user?.email || 'A').charAt(0).toUpperCase() }}
+          </div>
+          <div class="min-w-0 flex-1">
             <p class="text-sm font-medium truncate">{{ authStore.user?.name || 'Admin' }}</p>
-            <p class="text-xs text-gray-500 truncate">{{ authStore.user?.email }}</p>
+            <p class="text-[11px] text-gray-500 truncate">{{ authStore.user?.email }}</p>
           </div>
         </div>
-        <UButton block variant="outline" size="sm" @click="logout">
+        <button
+          class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-gray-400 hover:text-white border border-white/[0.06] hover:border-white/10 rounded-lg transition-all hover:bg-white/5"
+          @click="logout"
+        >
+          <UIcon name="i-lucide-log-out" class="w-3.5 h-3.5" />
           Sign out
-        </UButton>
+        </button>
       </div>
     </aside>
 
     <!-- Main content -->
     <main class="flex-1 overflow-auto">
-      <div class="p-6">
+      <div class="p-8">
         <slot />
       </div>
     </main>
@@ -45,7 +64,6 @@
 <script setup lang="ts">
 const authStore = useAuthStore()
 const router = useRouter()
-
 const route = useRoute()
 
 function isActive(path: string) {

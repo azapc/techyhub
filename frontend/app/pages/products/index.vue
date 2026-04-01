@@ -1,98 +1,129 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <h1 class="text-2xl font-bold mb-6">Products</h1>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="flex items-end justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight">Products</h1>
+        <p class="text-gray-500 mt-1">{{ total }} items available</p>
+      </div>
+    </div>
 
     <div class="flex flex-col lg:flex-row gap-8">
       <!-- Sidebar filters -->
-      <aside class="lg:w-64 shrink-0 space-y-6">
+      <aside class="lg:w-56 shrink-0 space-y-6">
+        <!-- Search -->
         <div>
-          <h3 class="font-semibold mb-3">Category</h3>
-          <ul class="space-y-1">
-            <li>
-              <button
-                class="text-sm w-full text-left px-2 py-1 rounded"
-                :class="!selectedCategory ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 font-medium' : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'"
-                @click="selectCategory(undefined)"
-              >
-                All Categories
-              </button>
-            </li>
-            <li v-for="cat in categories" :key="cat.id">
-              <button
-                class="text-sm w-full text-left px-2 py-1 rounded"
-                :class="selectedCategory === cat.id ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 font-medium' : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'"
-                @click="selectCategory(cat.id)"
-              >
-                {{ cat.name }} ({{ cat._count.products }})
-              </button>
-            </li>
-          </ul>
+          <label class="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2 block">Search</label>
+          <div class="relative">
+            <UIcon name="i-lucide-search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+            <input
+              v-model="search"
+              type="text"
+              placeholder="Search..."
+              class="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm placeholder-gray-600 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all"
+              @keyup.enter="fetchProducts"
+            >
+          </div>
         </div>
 
+        <!-- Categories -->
         <div>
-          <h3 class="font-semibold mb-3">Price Range</h3>
-          <div class="flex gap-2">
-            <UInput v-model="minPrice" type="number" placeholder="Min" size="sm" class="w-1/2" />
-            <UInput v-model="maxPrice" type="number" placeholder="Max" size="sm" class="w-1/2" />
+          <label class="text-xs font-medium uppercase tracking-wider text-gray-500 mb-3 block">Category</label>
+          <div class="space-y-0.5">
+            <button
+              class="w-full text-left px-3 py-2 rounded-lg text-sm transition-all"
+              :class="!selectedCategory ? 'bg-green-500/10 text-green-400 font-medium' : 'text-gray-400 hover:text-white hover:bg-white/5'"
+              @click="selectCategory(undefined)"
+            >
+              All Categories
+            </button>
+            <button
+              v-for="cat in categories"
+              :key="cat.id"
+              class="w-full text-left px-3 py-2 rounded-lg text-sm transition-all"
+              :class="selectedCategory === cat.id ? 'bg-green-500/10 text-green-400 font-medium' : 'text-gray-400 hover:text-white hover:bg-white/5'"
+              @click="selectCategory(cat.id)"
+            >
+              {{ cat.name }}
+              <span class="text-gray-600 text-xs ml-1">({{ cat._count.products }})</span>
+            </button>
           </div>
-          <UButton size="xs" variant="soft" class="mt-2" @click="applyPriceFilter">
-            Apply
-          </UButton>
+        </div>
+
+        <!-- Price Range -->
+        <div>
+          <label class="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2 block">Price Range</label>
+          <div class="flex gap-2">
+            <input
+              v-model="minPrice"
+              type="number"
+              placeholder="Min"
+              class="w-1/2 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm placeholder-gray-600 focus:outline-none focus:border-green-500/50 transition-all"
+            >
+            <input
+              v-model="maxPrice"
+              type="number"
+              placeholder="Max"
+              class="w-1/2 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm placeholder-gray-600 focus:outline-none focus:border-green-500/50 transition-all"
+            >
+          </div>
         </div>
       </aside>
 
       <!-- Products grid -->
       <div class="flex-1">
-        <!-- Search bar -->
-        <div class="mb-6">
-          <UInput
-            v-model="search"
-            placeholder="Search products..."
-            icon="i-lucide-search"
-            class="w-full max-w-md"
-            @keyup.enter="fetchProducts"
-          />
+        <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div v-for="i in 6" :key="i" class="rounded-2xl overflow-hidden">
+            <div class="aspect-square bg-white/[0.03] shimmer" />
+            <div class="p-4 space-y-2">
+              <div class="h-3 w-16 rounded bg-white/[0.03] shimmer" />
+              <div class="h-4 w-3/4 rounded bg-white/[0.03] shimmer" />
+              <div class="h-5 w-20 rounded bg-white/[0.03] shimmer" />
+            </div>
+          </div>
         </div>
 
-        <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <USkeleton v-for="i in 6" :key="i" class="h-72 rounded-xl" />
-        </div>
-
-        <div v-else-if="products.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-else-if="filteredProducts.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <NuxtLink
             v-for="product in filteredProducts"
             :key="product.id"
             :to="`/products/${product.slug}`"
-            class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition-shadow"
+            class="group rounded-2xl overflow-hidden bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] transition-all hover-lift"
           >
-            <div class="aspect-square bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+            <div class="aspect-square bg-gray-900 flex items-center justify-center overflow-hidden">
               <img
                 v-if="product.images?.[0]"
                 :src="product.images[0].url"
                 :alt="product.name"
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                class="w-full h-full object-cover img-zoom"
               >
-              <UIcon v-else name="i-lucide-image" class="w-16 h-16 text-gray-300" />
+              <UIcon v-else name="i-lucide-image" class="w-12 h-12 text-gray-700" />
             </div>
             <div class="p-4">
-              <p class="text-xs text-primary-600 font-medium mb-1">{{ product.category?.name }}</p>
-              <h3 class="font-semibold text-gray-900 dark:text-white truncate">{{ product.name }}</h3>
+              <p class="text-[11px] uppercase tracking-wider text-green-400 font-medium mb-1">{{ product.category?.name }}</p>
+              <h3 class="font-semibold text-white truncate text-sm">{{ product.name }}</h3>
               <div class="flex items-center justify-between mt-2">
-                <p class="text-lg font-bold text-primary-600">${{ Number(product.price).toFixed(2) }}</p>
-                <span v-if="product.stock <= 5 && product.stock > 0" class="text-xs text-amber-600">Only {{ product.stock }} left</span>
-                <span v-else-if="product.stock === 0" class="text-xs text-red-600">Out of stock</span>
+                <p class="text-lg font-bold text-white">${{ Number(product.price).toFixed(2) }}</p>
+                <span v-if="product.stock <= 5 && product.stock > 0" class="text-[11px] text-amber-400 font-medium">
+                  {{ product.stock }} left
+                </span>
+                <span v-else-if="product.stock === 0" class="text-[11px] text-red-400 font-medium">
+                  Sold out
+                </span>
               </div>
             </div>
           </NuxtLink>
         </div>
 
-        <div v-else class="text-center py-12 text-gray-500">
-          <UIcon name="i-lucide-search-x" class="w-12 h-12 mx-auto mb-4 text-gray-300" />
-          <p>No products found. Try adjusting your filters.</p>
+        <div v-else class="text-center py-20">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/[0.03] flex items-center justify-center">
+            <UIcon name="i-lucide-search-x" class="w-8 h-8 text-gray-600" />
+          </div>
+          <p class="text-gray-400 font-medium">No products found</p>
+          <p class="text-gray-600 text-sm mt-1">Try adjusting your filters</p>
         </div>
 
         <!-- Pagination -->
-        <div v-if="totalPages > 1" class="flex justify-center mt-8">
+        <div v-if="totalPages > 1" class="flex justify-center mt-10">
           <UPagination v-model="page" :total="total" :items-per-page="limit" @update:model-value="fetchProducts" />
         </div>
       </div>
@@ -148,10 +179,6 @@ function selectCategory(id?: string) {
   selectedCategory.value = id
   page.value = 1
   fetchProducts()
-}
-
-function applyPriceFilter() {
-  // Price filter is client-side via computed
 }
 
 async function fetchProducts() {

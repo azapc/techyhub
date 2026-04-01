@@ -1,65 +1,102 @@
 <template>
   <div>
-    <h1 class="text-2xl font-bold mb-6">Categories</h1>
+    <div class="mb-8">
+      <h1 class="text-2xl font-bold tracking-tight">Categories</h1>
+      <p class="text-gray-500 text-sm mt-1">Organize your product catalog</p>
+    </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- List -->
-      <UCard>
-        <template #header><h2 class="font-semibold">Existing categories</h2></template>
-        <div v-if="pending" class="space-y-2">
-          <USkeleton v-for="i in 4" :key="i" class="h-10 rounded" />
+      <div class="rounded-2xl bg-white/[0.03] border border-white/[0.06] overflow-hidden">
+        <div class="p-5 border-b border-white/[0.06]">
+          <h2 class="font-semibold text-white text-sm">Existing categories</h2>
         </div>
-        <div v-else-if="!categories?.length" class="text-center py-6 text-gray-500">
-          No categories yet. Create your first one.
+        <div class="p-4">
+          <div v-if="pending" class="space-y-2">
+            <div v-for="i in 4" :key="i" class="h-12 rounded-xl bg-white/[0.02] shimmer" />
+          </div>
+          <div v-else-if="!categories?.length" class="text-center py-10 text-gray-500">
+            <UIcon name="i-lucide-tag" class="w-8 h-8 mx-auto mb-3 text-gray-600" />
+            <p class="text-sm">No categories yet. Create your first one.</p>
+          </div>
+          <ul v-else class="space-y-1">
+            <li
+              v-for="cat in categories"
+              :key="cat.id"
+              class="flex items-center justify-between p-3 rounded-xl hover:bg-white/[0.03] transition-all group"
+            >
+              <div>
+                <p class="font-medium text-white text-sm">{{ cat.name }}</p>
+                <p class="text-[11px] text-gray-500">/{{ cat.slug }} · {{ cat._count?.products ?? 0 }} products</p>
+              </div>
+              <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button class="p-1.5 text-gray-500 hover:text-white rounded-lg hover:bg-white/5 transition-all" @click="startEdit(cat)">
+                  <UIcon name="i-lucide-pencil" class="w-3.5 h-3.5" />
+                </button>
+                <button class="p-1.5 text-gray-500 hover:text-red-400 rounded-lg hover:bg-red-500/10 transition-all" @click="confirmDelete(cat)">
+                  <UIcon name="i-lucide-trash-2" class="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </li>
+          </ul>
         </div>
-        <ul v-else class="divide-y divide-gray-100 dark:divide-gray-800">
-          <li v-for="cat in categories" :key="cat.id" class="flex items-center justify-between py-3">
-            <div>
-              <p class="font-medium">{{ cat.name }}</p>
-              <p class="text-xs text-gray-500">/{{ cat.slug }} · {{ cat._count?.products ?? 0 }} products</p>
-            </div>
-            <div class="flex gap-1">
-              <UButton variant="ghost" icon="i-lucide-pencil" size="xs" @click="startEdit(cat)" />
-              <UButton variant="ghost" color="error" icon="i-lucide-trash-2" size="xs" @click="confirmDelete(cat)" />
-            </div>
-          </li>
-        </ul>
-      </UCard>
+      </div>
 
       <!-- Form -->
-      <UCard>
-        <template #header>
-          <div class="flex items-center justify-between">
-            <h2 class="font-semibold">{{ editing ? 'Edit category' : 'New category' }}</h2>
-            <UButton v-if="editing" variant="ghost" size="xs" @click="cancelEdit">Cancel edit</UButton>
-          </div>
-        </template>
-        <UForm :state="form" class="space-y-4" @submit="editing ? updateCategory() : createCategory()">
-          <UFormField label="Name">
-            <UInput v-model="form.name" placeholder="e.g. Monitors" class="w-full" />
-          </UFormField>
-          <UFormField label="Slug">
-            <UInput v-model="form.slug" placeholder="monitors" class="w-full" />
-          </UFormField>
-          <UButton type="submit" :loading="saving">
-            {{ editing ? 'Update category' : 'Create category' }}
-          </UButton>
-        </UForm>
-      </UCard>
+      <div class="rounded-2xl bg-white/[0.03] border border-white/[0.06] overflow-hidden h-fit">
+        <div class="p-5 border-b border-white/[0.06] flex items-center justify-between">
+          <h2 class="font-semibold text-white text-sm">{{ editing ? 'Edit category' : 'New category' }}</h2>
+          <button v-if="editing" class="text-xs text-gray-500 hover:text-white transition-colors" @click="cancelEdit">Cancel</button>
+        </div>
+        <div class="p-5">
+          <form class="space-y-4" @submit.prevent="editing ? updateCategory() : createCategory()">
+            <div>
+              <label class="text-xs font-medium text-gray-400 mb-1.5 block">Name</label>
+              <input
+                v-model="form.name"
+                type="text"
+                placeholder="e.g. Monitors"
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm placeholder-gray-600 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all"
+              >
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-400 mb-1.5 block">Slug</label>
+              <input
+                v-model="form.slug"
+                type="text"
+                placeholder="monitors"
+                class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm placeholder-gray-600 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all"
+              >
+            </div>
+            <button
+              type="submit"
+              :disabled="saving"
+              class="w-full px-4 py-2.5 bg-green-500 hover:bg-green-400 disabled:bg-green-500/50 text-gray-950 font-semibold text-sm rounded-xl transition-all hover:shadow-lg hover:shadow-green-500/25 disabled:shadow-none"
+            >
+              {{ saving ? 'Saving...' : (editing ? 'Update category' : 'Create category') }}
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
 
+    <!-- Delete modal -->
     <UModal v-model:open="showDeleteModal">
       <template #content>
-        <UCard>
-          <template #header><h3 class="font-semibold">Confirm deletion</h3></template>
-          <p>Delete category <strong>{{ deleteTarget?.name }}</strong>?</p>
-          <template #footer>
-            <div class="flex gap-2 justify-end">
-              <UButton variant="ghost" @click="showDeleteModal = false">Cancel</UButton>
-              <UButton color="error" :loading="deleting" @click="doDelete">Delete</UButton>
-            </div>
-          </template>
-        </UCard>
+        <div class="rounded-2xl bg-gray-900 border border-white/[0.06] p-6">
+          <h3 class="font-semibold text-white mb-2">Delete category</h3>
+          <p class="text-gray-400 text-sm mb-6">Delete <strong class="text-white">{{ deleteTarget?.name }}</strong>?</p>
+          <div class="flex gap-2 justify-end">
+            <button class="px-4 py-2 text-sm text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-all" @click="showDeleteModal = false">Cancel</button>
+            <button
+              :disabled="deleting"
+              class="px-4 py-2 text-sm bg-red-500 hover:bg-red-400 text-white font-medium rounded-lg transition-all disabled:opacity-50"
+              @click="doDelete"
+            >
+              {{ deleting ? 'Deleting...' : 'Delete' }}
+            </button>
+          </div>
+        </div>
       </template>
     </UModal>
   </div>

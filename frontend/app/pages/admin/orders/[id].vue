@@ -1,32 +1,40 @@
 <template>
   <div>
-    <div class="flex items-center gap-3 mb-6">
+    <!-- Header -->
+    <div class="flex items-center gap-3 mb-8">
       <NuxtLink to="/admin/orders">
-        <UButton variant="ghost" icon="i-lucide-arrow-left" size="sm" />
+        <button class="p-2 text-gray-500 hover:text-white rounded-lg hover:bg-white/5 transition-all">
+          <UIcon name="i-lucide-arrow-left" class="w-4 h-4" />
+        </button>
       </NuxtLink>
-      <h1 class="text-2xl font-bold">Order Detail</h1>
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight">Order Detail</h1>
+        <p v-if="order" class="text-xs text-gray-500 font-mono mt-0.5">{{ order.id }}</p>
+      </div>
     </div>
 
+    <!-- Loading -->
     <div v-if="loading" class="space-y-4">
-      <USkeleton class="h-40 rounded-xl" />
-      <USkeleton class="h-60 rounded-xl" />
+      <div class="h-40 rounded-2xl bg-white/[0.03] shimmer" />
+      <div class="h-60 rounded-2xl bg-white/[0.03] shimmer" />
     </div>
 
+    <!-- Content -->
     <div v-else-if="order" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Main info -->
       <div class="lg:col-span-2 space-y-6">
         <!-- Order items -->
-        <UCard>
-          <template #header>
-            <h2 class="font-semibold">Items ({{ order.items.length }})</h2>
-          </template>
-          <div class="space-y-3">
+        <div class="rounded-2xl bg-white/[0.03] border border-white/[0.06] overflow-hidden">
+          <div class="p-5 border-b border-white/[0.06]">
+            <h2 class="font-semibold text-white text-sm">Items ({{ order.items.length }})</h2>
+          </div>
+          <div class="p-5 space-y-3">
             <div
               v-for="item in order.items"
               :key="item.id"
               class="flex items-center gap-4"
             >
-              <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden shrink-0">
+              <div class="w-12 h-12 bg-gray-900 rounded-xl overflow-hidden shrink-0 border border-white/[0.06]">
                 <img
                   v-if="item.product?.images?.[0]"
                   :src="item.product.images[0].url"
@@ -34,77 +42,97 @@
                   class="w-full h-full object-cover"
                 >
                 <div v-else class="w-full h-full flex items-center justify-center">
-                  <UIcon name="i-lucide-image" class="w-5 h-5 text-gray-300" />
+                  <UIcon name="i-lucide-image" class="w-5 h-5 text-gray-700" />
                 </div>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="font-medium truncate">{{ item.product?.name }}</p>
-                <p class="text-sm text-gray-500">Qty: {{ item.quantity }} x ${{ Number(item.price).toFixed(2) }}</p>
+                <p class="font-medium text-white text-sm truncate">{{ item.product?.name }}</p>
+                <p class="text-xs text-gray-500">Qty: {{ item.quantity }} x ${{ Number(item.price).toFixed(2) }}</p>
               </div>
-              <p class="font-medium shrink-0">${{ (Number(item.price) * item.quantity).toFixed(2) }}</p>
+              <p class="font-medium text-white text-sm shrink-0">${{ (Number(item.price) * item.quantity).toFixed(2) }}</p>
             </div>
           </div>
-          <template #footer>
-            <div class="flex justify-between font-bold text-lg">
-              <span>Total</span>
-              <span class="text-primary-600">${{ Number(order.total).toFixed(2) }}</span>
-            </div>
-          </template>
-        </UCard>
+          <div class="p-5 border-t border-white/[0.06] flex justify-between items-center">
+            <span class="font-semibold text-white">Total</span>
+            <span class="text-xl font-bold text-green-400">${{ Number(order.total).toFixed(2) }}</span>
+          </div>
+        </div>
 
         <!-- Shipping address -->
-        <UCard>
-          <template #header>
-            <h2 class="font-semibold">Shipping Address</h2>
-          </template>
-          <p>{{ order.shippingAddress }}</p>
-          <p>{{ order.shippingCity }}, {{ order.shippingState }} {{ order.shippingZip }}</p>
-          <p>{{ order.shippingCountry }}</p>
-        </UCard>
+        <div class="rounded-2xl bg-white/[0.03] border border-white/[0.06] overflow-hidden">
+          <div class="p-5 border-b border-white/[0.06]">
+            <h2 class="font-semibold text-white text-sm flex items-center gap-2">
+              <UIcon name="i-lucide-map-pin" class="w-4 h-4 text-gray-500" />
+              Shipping Address
+            </h2>
+          </div>
+          <div class="p-5 text-sm text-gray-300">
+            <p>{{ order.shippingAddress }}</p>
+            <p>{{ order.shippingCity }}, {{ order.shippingState }} {{ order.shippingZip }}</p>
+            <p class="text-gray-500">{{ order.shippingCountry }}</p>
+          </div>
+        </div>
       </div>
 
       <!-- Sidebar -->
       <div class="space-y-6">
         <!-- Status -->
-        <UCard>
-          <template #header>
-            <h2 class="font-semibold">Status</h2>
-          </template>
-          <div class="space-y-4">
-            <UBadge :color="statusColor(order.status)" variant="subtle" size="lg">
+        <div class="rounded-2xl bg-white/[0.03] border border-white/[0.06] overflow-hidden">
+          <div class="p-5 border-b border-white/[0.06]">
+            <h2 class="font-semibold text-white text-sm">Status</h2>
+          </div>
+          <div class="p-5 space-y-4">
+            <span
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium"
+              :class="statusClasses(order.status)"
+            >
+              <span class="w-1.5 h-1.5 rounded-full" :class="statusDot(order.status)" />
               {{ order.status }}
-            </UBadge>
+            </span>
             <USelect
               :model-value="order.status"
               :items="statusOptions"
               @update:model-value="updateStatus"
             />
           </div>
-        </UCard>
+        </div>
 
         <!-- Customer -->
-        <UCard>
-          <template #header>
-            <h2 class="font-semibold">Customer</h2>
-          </template>
-          <p class="font-medium">{{ order.customerName }}</p>
-          <p class="text-sm text-gray-500">{{ order.customerEmail }}</p>
-          <p v-if="order.user" class="text-xs text-gray-400 mt-2">
-            Registered user: {{ order.user.name || order.user.email }}
-          </p>
-          <p v-else class="text-xs text-gray-400 mt-2">Guest order</p>
-        </UCard>
+        <div class="rounded-2xl bg-white/[0.03] border border-white/[0.06] overflow-hidden">
+          <div class="p-5 border-b border-white/[0.06]">
+            <h2 class="font-semibold text-white text-sm flex items-center gap-2">
+              <UIcon name="i-lucide-user" class="w-4 h-4 text-gray-500" />
+              Customer
+            </h2>
+          </div>
+          <div class="p-5">
+            <p class="font-medium text-white text-sm">{{ order.customerName }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">{{ order.customerEmail }}</p>
+            <span
+              class="inline-flex items-center mt-3 px-2 py-0.5 rounded-full text-[10px] font-medium"
+              :class="order.user ? 'bg-green-500/10 text-green-400' : 'bg-white/5 text-gray-400'"
+            >
+              {{ order.user ? 'Registered user' : 'Guest order' }}
+            </span>
+          </div>
+        </div>
 
         <!-- Dates -->
-        <UCard>
-          <template #header>
-            <h2 class="font-semibold">Dates</h2>
-          </template>
-          <div class="text-sm space-y-1">
-            <p><span class="text-gray-500">Created:</span> {{ new Date(order.createdAt).toLocaleString() }}</p>
-            <p><span class="text-gray-500">Updated:</span> {{ new Date(order.updatedAt).toLocaleString() }}</p>
+        <div class="rounded-2xl bg-white/[0.03] border border-white/[0.06] overflow-hidden">
+          <div class="p-5 border-b border-white/[0.06]">
+            <h2 class="font-semibold text-white text-sm">Timeline</h2>
           </div>
-        </UCard>
+          <div class="p-5 text-sm space-y-2">
+            <div class="flex justify-between">
+              <span class="text-gray-500">Created</span>
+              <span class="text-gray-300">{{ new Date(order.createdAt).toLocaleString() }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Updated</span>
+              <span class="text-gray-300">{{ new Date(order.updatedAt).toLocaleString() }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -151,12 +179,28 @@ const statusOptions = [
   { label: 'Cancelled', value: 'CANCELLED' }
 ]
 
-function statusColor(status: string): 'warning' | 'info' | 'primary' | 'success' | 'error' | 'neutral' {
-  const map: Record<string, 'warning' | 'info' | 'primary' | 'success' | 'error' | 'neutral'> = {
-    PENDING: 'warning', PAID: 'info', PROCESSING: 'info',
-    SHIPPED: 'primary', DELIVERED: 'success', CANCELLED: 'error'
+function statusClasses(status: string): string {
+  const map: Record<string, string> = {
+    PENDING: 'bg-amber-500/10 text-amber-400',
+    PAID: 'bg-blue-500/10 text-blue-400',
+    PROCESSING: 'bg-blue-500/10 text-blue-400',
+    SHIPPED: 'bg-cyan-500/10 text-cyan-400',
+    DELIVERED: 'bg-green-500/10 text-green-400',
+    CANCELLED: 'bg-red-500/10 text-red-400',
   }
-  return map[status] || 'neutral'
+  return map[status] || 'bg-white/5 text-gray-400'
+}
+
+function statusDot(status: string): string {
+  const map: Record<string, string> = {
+    PENDING: 'bg-amber-400',
+    PAID: 'bg-blue-400',
+    PROCESSING: 'bg-blue-400',
+    SHIPPED: 'bg-cyan-400',
+    DELIVERED: 'bg-green-400',
+    CANCELLED: 'bg-red-400',
+  }
+  return map[status] || 'bg-gray-400'
 }
 
 async function updateStatus(status: string) {

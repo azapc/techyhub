@@ -1,58 +1,101 @@
 <template>
   <div>
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">Products</h1>
-      <UButton to="/admin/products/create" icon="i-lucide-plus">New product</UButton>
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight">Products</h1>
+        <p class="text-gray-500 text-sm mt-1">{{ total }} products in your store</p>
+      </div>
+      <NuxtLink to="/admin/products/create">
+        <button class="flex items-center gap-2 px-4 py-2.5 bg-green-500 hover:bg-green-400 text-gray-950 font-semibold text-sm rounded-xl transition-all hover:shadow-lg hover:shadow-green-500/25">
+          <UIcon name="i-lucide-plus" class="w-4 h-4" />
+          New product
+        </button>
+      </NuxtLink>
     </div>
 
-    <div class="flex gap-3 mb-4">
-      <UInput v-model="search" placeholder="Search products..." icon="i-lucide-search" class="max-w-xs" @input="debouncedFetch" />
+    <!-- Filters -->
+    <div class="flex gap-3 mb-6">
+      <div class="relative flex-1 max-w-xs">
+        <UIcon name="i-lucide-search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
+        <input
+          v-model="search"
+          type="text"
+          placeholder="Search products..."
+          class="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm placeholder-gray-600 focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all"
+          @input="debouncedFetch"
+        >
+      </div>
       <USelect v-model="categoryId" :items="categoryOptions" placeholder="Category" class="max-w-xs" @update:model-value="fetchProducts" />
     </div>
 
-    <UCard>
+    <!-- Table -->
+    <div class="rounded-2xl bg-white/[0.03] border border-white/[0.06] overflow-hidden">
       <UTable :data="products" :columns="columns" :loading="pending">
-        <template #price-cell="{ row }">
-          ${{ Number((row.original as Product).price).toFixed(2) }}
-        </template>
-        <template #stock-cell="{ row }">
-          <UBadge :color="(row.original as Product).stock <= 5 ? 'error' : 'success'" variant="subtle">
-            {{ (row.original as Product).stock }}
-          </UBadge>
+        <template #name-cell="{ row }">
+          <span class="font-medium text-white">{{ (row.original as Product).name }}</span>
         </template>
         <template #category-cell="{ row }">
-          {{ (row.original as Product).category?.name }}
+          <span class="text-gray-400">{{ (row.original as Product).category?.name }}</span>
+        </template>
+        <template #price-cell="{ row }">
+          <span class="font-medium text-white">${{ Number((row.original as Product).price).toFixed(2) }}</span>
+        </template>
+        <template #stock-cell="{ row }">
+          <span
+            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+            :class="(row.original as Product).stock <= 5
+              ? 'bg-red-500/10 text-red-400'
+              : 'bg-green-500/10 text-green-400'"
+          >
+            <span
+              class="w-1.5 h-1.5 rounded-full"
+              :class="(row.original as Product).stock <= 5 ? 'bg-red-400' : 'bg-green-400'"
+            />
+            {{ (row.original as Product).stock }}
+          </span>
         </template>
         <template #actions-cell="{ row }">
-          <div class="flex gap-2">
-            <UButton :to="`/admin/products/${(row.original as Product).id}/edit`" variant="ghost" icon="i-lucide-pencil" size="xs" />
-            <UButton variant="ghost" color="error" icon="i-lucide-trash-2" size="xs" @click="confirmDelete(row.original as Product)" />
+          <div class="flex gap-1">
+            <NuxtLink :to="`/admin/products/${(row.original as Product).id}/edit`">
+              <button class="p-2 text-gray-500 hover:text-white rounded-lg hover:bg-white/5 transition-all">
+                <UIcon name="i-lucide-pencil" class="w-4 h-4" />
+              </button>
+            </NuxtLink>
+            <button class="p-2 text-gray-500 hover:text-red-400 rounded-lg hover:bg-red-500/10 transition-all" @click="confirmDelete(row.original as Product)">
+              <UIcon name="i-lucide-trash-2" class="w-4 h-4" />
+            </button>
           </div>
         </template>
         <template #empty>
-          <div class="text-center py-6 text-gray-500">
-            {{ search || categoryId !== 'all' ? 'No products match your filters.' : 'No products yet. Create your first one.' }}
+          <div class="text-center py-12 text-gray-500">
+            <UIcon name="i-lucide-package" class="w-8 h-8 mx-auto mb-3 text-gray-600" />
+            <p>{{ search || categoryId !== 'all' ? 'No products match your filters.' : 'No products yet. Create your first one.' }}</p>
           </div>
         </template>
       </UTable>
 
-      <div v-if="total > limit" class="flex justify-end mt-4">
+      <div v-if="total > limit" class="flex justify-end p-4 border-t border-white/[0.06]">
         <UPagination v-model="page" :total="total" :items-per-page="limit" @update:model-value="fetchProducts" />
       </div>
-    </UCard>
+    </div>
 
+    <!-- Delete modal -->
     <UModal v-model:open="showDeleteModal">
       <template #content>
-        <UCard>
-          <template #header><h3 class="font-semibold">Confirm deletion</h3></template>
-          <p>Delete <strong>{{ deleteTarget?.name }}</strong>? This action cannot be undone.</p>
-          <template #footer>
-            <div class="flex gap-2 justify-end">
-              <UButton variant="ghost" @click="showDeleteModal = false">Cancel</UButton>
-              <UButton color="error" :loading="deleting" @click="doDelete">Delete</UButton>
-            </div>
-          </template>
-        </UCard>
+        <div class="rounded-2xl bg-gray-900 border border-white/[0.06] p-6">
+          <h3 class="font-semibold text-white mb-2">Delete product</h3>
+          <p class="text-gray-400 text-sm mb-6">Delete <strong class="text-white">{{ deleteTarget?.name }}</strong>? This action cannot be undone.</p>
+          <div class="flex gap-2 justify-end">
+            <button class="px-4 py-2 text-sm text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-all" @click="showDeleteModal = false">Cancel</button>
+            <button
+              :disabled="deleting"
+              class="px-4 py-2 text-sm bg-red-500 hover:bg-red-400 text-white font-medium rounded-lg transition-all disabled:opacity-50"
+              @click="doDelete"
+            >
+              {{ deleting ? 'Deleting...' : 'Delete' }}
+            </button>
+          </div>
+        </div>
       </template>
     </UModal>
   </div>
