@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-<img alt="TechyHub Storefront" width="950" src=".github/images/TechyHub.png"/>
+<img alt="TechyHub Storefront" width="950" src=".github/TechyHub.png"/>
 </p>
 
 ## Introduction
